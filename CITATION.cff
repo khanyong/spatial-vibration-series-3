@@ -1,0 +1,10 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below."
+authors:
+  - family-names: "Yoo"
+    given-names: "Kwang Yong"
+title: "Mechanics of Spatial Vibration III: Cosmic Plate Tectonics and Wave Interference Topography"
+version: 1.0.0
+doi: 10.5281/zenodo.1234567  # Placeholder to be updated on release
+date-released: 2026-07-08
+url: "https://github.com/khanyong/spatial-vibration-series-3"

@@ -1,0 +1,1019 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Geomechanical Simulation Sandbox for Spatial Vibration Mechanics III</title>
+  <!-- Google Fonts: JetBrains Mono & Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+  
+  <style>
+    :root {
+      --bg-color: #09090b;
+      --card-bg: #18181b;
+      --border-color: #27272a;
+      --text-main: #f4f4f5;
+      --text-muted: #a1a1aa;
+      --accent-blue: #3b82f6;
+      --accent-red: #ef4444;
+      --accent-purple: #a855f7;
+      --accent-amber: #fbbf24;
+      --accent-emerald: #10b981;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--bg-color);
+      color: var(--text-main);
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem 1rem;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 1080px;
+      background-color: #0c0c0e;
+      border: 1px solid var(--border-color);
+      border-radius: 16px;
+      padding: 1.5rem;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+    }
+
+    header {
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: 1rem;
+      border-bottom: 1px solid var(--border-color);
+      padding-bottom: 1rem;
+      margin-bottom: 1.5rem;
+    }
+
+    @media (min-width: 768px) {
+      header {
+        flex-direction: row;
+        align-items: center;
+      }
+    }
+
+    h1 {
+      font-size: 1.15rem;
+      font-weight: 700;
+      letter-spacing: -0.025em;
+      font-family: 'JetBrains Mono', monospace;
+      color: var(--text-main);
+    }
+
+    .subtitle {
+      font-size: 0.72rem;
+      color: var(--text-muted);
+      margin-top: 0.25rem;
+      font-family: 'Inter', sans-serif;
+    }
+
+    .tab-group {
+      display: flex;
+      background-color: #18181b;
+      padding: 0.25rem;
+      border-radius: 8px;
+      border: 1px solid var(--border-color);
+      gap: 0.25rem;
+    }
+
+    .tab-btn {
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      padding: 0.5rem 0.85rem;
+      font-size: 0.72rem;
+      font-weight: 700;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    .tab-btn:hover {
+      color: var(--text-main);
+    }
+
+    .tab-btn.active {
+      color: #fff;
+    }
+
+    .tab-btn.active.web { background-color: var(--accent-emerald); }
+    .tab-btn.active.quake { background-color: var(--accent-purple); }
+    .tab-btn.active.pointing { background-color: var(--accent-amber); color: #000; }
+
+    .main-layout {
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+    }
+
+    @media (min-width: 992px) {
+      .main-layout {
+        flex-direction: row;
+      }
+    }
+
+    .canvas-container {
+      flex: 1;
+      background-color: rgba(9, 9, 11, 0.5);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 0.5rem;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      overflow: hidden;
+    }
+
+    canvas {
+      display: block;
+      width: 100%;
+      max-width: 600px;
+      height: auto;
+      border-radius: 8px;
+      background-color: #09090b;
+      cursor: grab;
+    }
+
+    canvas:active {
+      cursor: grabbing;
+    }
+
+    .controls-panel {
+      width: 100%;
+      max-width: 320px;
+      background-color: rgba(24, 24, 27, 0.4);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 1.25rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1.25rem;
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    .panel-title {
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .control-group {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    .control-label {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.7rem;
+      color: var(--text-muted);
+    }
+
+    .control-val {
+      font-weight: 700;
+    }
+
+    .control-val.web { color: var(--accent-emerald); }
+    .control-val.quake { color: var(--accent-purple); }
+    .control-val.pointing { color: var(--accent-amber); }
+
+    input[type="range"] {
+      -webkit-appearance: none;
+      width: 100%;
+      height: 4px;
+      border-radius: 2px;
+      background: var(--border-color);
+      outline: none;
+      cursor: pointer;
+    }
+
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: var(--text-main);
+      cursor: pointer;
+      transition: transform 0.1s ease;
+    }
+
+    input[type="range"]::-webkit-slider-thumb:hover {
+      transform: scale(1.2);
+    }
+
+    .info-box {
+      background-color: #09090b;
+      border: 1px solid var(--border-color);
+      border-radius: 6px;
+      padding: 0.75rem;
+      font-size: 0.55rem;
+      color: var(--text-muted);
+      line-height: 1.5;
+      display: flex;
+      flex-direction: column;
+      gap: 0.35rem;
+    }
+
+    .info-item {
+      display: flex;
+      gap: 0.5rem;
+    }
+
+    .info-num {
+      color: var(--text-main);
+      font-weight: 700;
+    }
+
+    .reset-btn {
+      width: 100%;
+      background-color: #27272a;
+      border: 1px solid var(--border-color);
+      color: var(--text-main);
+      padding: 0.65rem;
+      font-size: 0.72rem;
+      font-weight: 700;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      font-family: 'JetBrains Mono', monospace;
+      margin-top: auto;
+    }
+
+    .reset-btn:hover {
+      background-color: #3f3f46;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <header>
+      <div>
+        <h1>SPATIAL VIBRATION MECHANICS III SANDBOX</h1>
+        <div class="subtitle">Cosmic Plate Tectonics, Cosmic Quakes, & Gertsenshtein Converter</div>
+      </div>
+      
+      <div class="tab-group">
+        <button class="tab-btn active web" onclick="setMode('web')">Mode A: Cosmic Web</button>
+        <button class="tab-btn quake" onclick="setMode('quake')">Mode B: Cosmic Quake</button>
+        <button class="tab-btn pointing" onclick="setMode('pointing')">Mode C: POINTING</button>
+      </div>
+    </header>
+
+    <div class="main-layout">
+      <!-- Simulator Canvas -->
+      <div class="canvas-container">
+        <canvas id="simCanvas"></canvas>
+      </div>
+
+      <!-- Controls Panel -->
+      <div class="controls-panel">
+        <div class="panel-title">Parameters Control</div>
+
+        <!-- Mode A: Cosmic Web Controls -->
+        <div id="webControls" class="mode-controls">
+          <div class="control-group" style="margin-bottom: 1.25rem;">
+            <div class="control-label">
+              <span>Phase Discordance (Δθ)</span>
+              <span id="valPhase" class="control-val web">1.80 rad</span>
+            </div>
+            <input type="range" id="sliderPhase" min="0" max="3.14" step="0.05" value="1.8">
+          </div>
+
+          <div class="control-group">
+            <div class="control-label">
+              <span>Baryon Gas Pressure (σ)</span>
+              <span id="valPressure" class="control-val web">0.60 GeV</span>
+            </div>
+            <input type="range" id="sliderPressure" min="0.1" max="1.5" step="0.05" value="0.6">
+          </div>
+        </div>
+
+        <!-- Mode B: Cosmic Quake Controls -->
+        <div id="quakeControls" class="mode-controls" style="display: none;">
+          <div class="control-group" style="margin-bottom: 1.25rem;">
+            <div class="control-label">
+              <span>Plate Slip Velocity (v)</span>
+              <span id="valVelocity" class="control-val quake">0.8 c</span>
+            </div>
+            <input type="range" id="sliderVelocity" min="0.2" max="2" step="0.1" value="0.8">
+          </div>
+
+          <div class="control-group">
+            <div class="control-label">
+              <span>Critical Stress (S_crit)</span>
+              <span id="valStress" class="control-val quake">75 N/m²</span>
+            </div>
+            <input type="range" id="sliderStress" min="40" max="100" step="1" value="75">
+          </div>
+        </div>
+
+        <!-- Mode C: POINTING Controls -->
+        <div id="pointingControls" class="mode-controls" style="display: none;">
+          <div class="info-box">
+            <div style="font-weight: 700; color: var(--accent-amber); margin-bottom: 0.25rem;">POINTING PROTOCOL RUNNING</div>
+            <div class="info-item">
+              <span class="info-num">1.</span>
+              <span>PTA network monitors stochastic precursor timing jitter.</span>
+            </div>
+            <div class="info-item">
+              <span class="info-num">2.</span>
+              <span>Neural Net decodes nHz gravitational foreshock waves.</span>
+            </div>
+            <div class="info-item">
+              <span class="info-num">3.</span>
+              <span>Target lock coordinated on anticipated cosmic earthquake location.</span>
+            </div>
+            <div class="info-item">
+              <span class="info-num">4.</span>
+              <span>GHz FRB burst captured automatically.</span>
+            </div>
+          </div>
+        </div>
+
+        <button class="reset-btn" onclick="resetSimulation()">Reset Simulation</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // State Variables
+    let simMode = 'web';
+    let phaseMismatch = 1.80;
+    let baryonPressure = 0.60;
+    let slipVelocity = 0.8;
+    let ruptureThreshold = 75;
+
+    // Simulation Entities
+    let particles = [];
+    let gwWaves = [];
+    let photons = [];
+    let frameCount = 0;
+    let stress = 0;
+    let stressHistory = Array(120).fill(0);
+    let gertsenshteinFlash = 0;
+
+    // Mode C Entities
+    let pulsars = [];
+    let pointingStatus = 'scanning'; // scanning, warning, locked, burst
+    let targetIndex = 0;
+    let reticlePos = { x: 300, y: 210 };
+    let pointingProgress = 0;
+
+    // 3D Angles
+    let angleX = 15 * Math.PI / 180;
+    let angleY = 30 * Math.PI / 180;
+    let isDragging = false;
+    let prevMousePos = { x: 0, y: 0 };
+
+    // Canvas Initializations
+    const canvas = document.getElementById('simCanvas');
+    const ctx = canvas.getContext('2d');
+
+    // DPI Scaling
+    const dpr = window.devicePixelRatio || 1;
+    canvas.width = 600 * dpr;
+    canvas.height = 420 * dpr;
+    canvas.style.width = '100%';
+    canvas.style.maxWidth = '600px';
+    canvas.style.height = 'auto';
+    ctx.scale(dpr, dpr);
+
+    const width = 600;
+    const height = 420;
+
+    // Mouse Listeners for 3D Drag
+    canvas.addEventListener('mousedown', (e) => {
+      if (simMode === 'web') return;
+      isDragging = true;
+      prevMousePos = { x: e.clientX, y: e.clientY };
+    });
+
+    window.addEventListener('mousemove', (e) => {
+      if (!isDragging || simMode === 'web') return;
+      const rect = canvas.getBoundingClientRect();
+      const dx = e.clientX - prevMousePos.x;
+      const dy = e.clientY - prevMousePos.y;
+      angleY += dx * 0.007;
+      angleX = Math.max(-Math.PI / 3, Math.min(Math.PI / 3, angleX - dy * 0.007));
+      prevMousePos = { x: e.clientX, y: e.clientY };
+    });
+
+    window.addEventListener('mouseup', () => {
+      isDragging = false;
+    });
+
+    // Control UI Wire-up
+    const sliderPhase = document.getElementById('sliderPhase');
+    const valPhase = document.getElementById('valPhase');
+    sliderPhase.addEventListener('input', (e) => {
+      phaseMismatch = parseFloat(e.target.value);
+      valPhase.innerText = phaseMismatch.toFixed(2) + ' rad';
+      resetSimulation();
+    });
+
+    const sliderPressure = document.getElementById('sliderPressure');
+    const valPressure = document.getElementById('valPressure');
+    sliderPressure.addEventListener('input', (e) => {
+      baryonPressure = parseFloat(e.target.value);
+      valPressure.innerText = baryonPressure.toFixed(2) + ' GeV';
+      resetSimulation();
+    });
+
+    const sliderVelocity = document.getElementById('sliderVelocity');
+    const valVelocity = document.getElementById('valVelocity');
+    sliderVelocity.addEventListener('input', (e) => {
+      slipVelocity = parseFloat(e.target.value);
+      valVelocity.innerText = slipVelocity.toFixed(1) + ' c';
+      resetSimulation();
+    });
+
+    const sliderStress = document.getElementById('sliderStress');
+    const valStress = document.getElementById('valStress');
+    sliderStress.addEventListener('input', (e) => {
+      ruptureThreshold = parseInt(e.target.value);
+      valStress.innerText = ruptureThreshold + ' N/m²';
+      resetSimulation();
+    });
+
+    // Tab mode switcher
+    function setMode(mode) {
+      simMode = mode;
+      
+      // Update buttons active class
+      document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.classList.remove('active', 'web', 'quake', 'pointing');
+      });
+      
+      const activeBtn = document.querySelector(`.tab-btn.${mode}`);
+      activeBtn.classList.add('active', mode);
+
+      // Toggle controls panels
+      document.getElementById('webControls').style.display = mode === 'web' ? 'block' : 'none';
+      document.getElementById('quakeControls').style.display = mode === 'quake' ? 'block' : 'none';
+      document.getElementById('pointingControls').style.display = mode === 'pointing' ? 'block' : 'none';
+
+      resetSimulation();
+    }
+
+    // Reset Logic
+    function resetSimulation() {
+      particles = [];
+      gwWaves = [];
+      photons = [];
+      stress = 0;
+      stressHistory = Array(120).fill(0);
+      gertsenshteinFlash = 0;
+      frameCount = 0;
+      pointingStatus = 'scanning';
+      pointingProgress = 0;
+      targetIndex = 0;
+
+      if (simMode === 'web') {
+        for (let i = 0; i < 280; i++) {
+          particles.push({
+            x: Math.random() * 600,
+            y: Math.random() * 420,
+            vx: (Math.random() - 0.5) * 0.5,
+            vy: (Math.random() - 0.5) * 0.5,
+            size: 1 + Math.random() * 2,
+            color: `hsl(${180 + Math.random() * 40}, 75%, ${70 + Math.random() * 20}%)`
+          });
+        }
+      }
+
+      if (simMode === 'pointing') {
+        const names = ['Pulsar A', 'Pulsar B', 'Pulsar C', 'Pulsar D', 'Pulsar E', 'Pulsar F', 'Pulsar G'];
+        const colors = ['#3b82f6', '#60a5fa', '#34d399', '#a855f7', '#fbbf24', '#f87171', '#38bdf8'];
+        pulsars = [];
+        for (let i = 0; i < 7; i++) {
+          const theta = (i / 7) * 2 * Math.PI;
+          const radius = 100 + Math.random() * 60;
+          pulsars.push({
+            x: Math.cos(theta) * radius,
+            y: Math.sin(theta) * radius,
+            z: (Math.random() - 0.5) * 80,
+            pulsePeriod: 25 + Math.floor(Math.random() * 25),
+            pulsePhase: Math.random() * 100,
+            jitter: 0,
+            name: names[i],
+            color: colors[i]
+          });
+        }
+      }
+    }
+
+    // Rendering loop
+    function render() {
+      frameCount++;
+      
+      // Clear background
+      ctx.fillStyle = '#09090b';
+      ctx.fillRect(0, 0, width, height);
+
+      // Glow effect via Screen Blend Mode
+      ctx.globalCompositeOperation = 'screen';
+
+      if (simMode === 'web') {
+        const cx = width * 0.65;
+        const cy = height / 2;
+        const vertX = cx;
+        const horizY = cy;
+
+        const isVertConstructive = (phaseMismatch < 1.0);
+        const isHorizConstructive = (phaseMismatch < 1.4);
+
+        // Draw domain labels
+        ctx.font = 'bold 9px monospace';
+        ctx.fillStyle = 'rgba(113, 113, 122, 0.4)';
+        ctx.fillText(`Domain 0 (θ=0)`, cx - 120, cy - 80);
+        ctx.fillText(`Domain 1 (θ=${phaseMismatch.toFixed(2)})`, cx + 60, cy - 80);
+        ctx.fillText(`Domain 2 (θ=0)`, cx - 120, cy + 90);
+        ctx.fillText(`Domain 3 (θ=${phaseMismatch.toFixed(2)})`, cx + 60, cy + 90);
+
+        // Particle dynamics
+        particles.forEach((p) => {
+          const dx = p.x - vertX;
+          const dy = p.y - horizY;
+
+          let forceX = 0;
+          let forceY = 0;
+
+          const distSqX = dx * dx + 800;
+          if (isVertConstructive) {
+            forceX = -dx * 0.08 / distSqX;
+          } else {
+            forceX = dx * (phaseMismatch * 0.08) / distSqX;
+          }
+
+          const distSqY = dy * dy + 800;
+          if (isHorizConstructive) {
+            forceY = -dy * 0.06 / distSqY;
+          } else {
+            forceY = dy * (phaseMismatch * 0.06) / distSqY;
+          }
+
+          p.vx += forceX + (Math.random() - 0.5) * baryonPressure * 0.15;
+          p.vy += forceY + (Math.random() - 0.5) * baryonPressure * 0.15;
+
+          p.vx *= 0.95;
+          p.vy *= 0.95;
+
+          p.x += p.vx;
+          p.y += p.vy;
+
+          if (p.x < 240) { p.x = 240; p.vx *= -1; }
+          if (p.x > width) { p.x = width; p.vx *= -1; }
+          if (p.y < 0) { p.y = 0; p.vy *= -1; }
+          if (p.y > height) { p.y = height; p.vy *= -1; }
+
+          ctx.fillStyle = p.color;
+          ctx.beginPath(); ctx.arc(p.x, p.y, p.size, 0, 2 * Math.PI); ctx.fill();
+        });
+
+        // Fault boundaries lines
+        ctx.save();
+        ctx.strokeStyle = isVertConstructive ? 'rgba(16, 185, 129, 0.45)' : 'rgba(168, 85, 247, 0.2)';
+        ctx.shadowColor = isVertConstructive ? '#10b981' : '#a855f7';
+        ctx.shadowBlur = isVertConstructive ? 8 : 2;
+        ctx.lineWidth = isVertConstructive ? 3.0 : 1.5;
+        if (!isVertConstructive) ctx.setLineDash([4, 4]);
+        ctx.beginPath(); ctx.moveTo(vertX, 10); ctx.lineTo(vertX, height - 10); ctx.stroke();
+        ctx.restore();
+
+        ctx.save();
+        ctx.strokeStyle = isHorizConstructive ? 'rgba(16, 185, 129, 0.45)' : 'rgba(168, 85, 247, 0.2)';
+        ctx.shadowColor = isHorizConstructive ? '#10b981' : '#a855f7';
+        ctx.shadowBlur = isHorizConstructive ? 8 : 2;
+        ctx.lineWidth = isHorizConstructive ? 3.0 : 1.5;
+        if (!isHorizConstructive) ctx.setLineDash([4, 4]);
+        ctx.beginPath(); ctx.moveTo(250, horizY); ctx.lineTo(width - 10, horizY); ctx.stroke();
+        ctx.restore();
+
+        // Reset blend for UI drawing
+        ctx.globalCompositeOperation = 'source-over';
+
+        // Density Graph
+        const gx = 45; const gy = 80; const gw = 170; const gh = 240;
+        ctx.save();
+        ctx.strokeStyle = '#27272a'; ctx.lineWidth = 1;
+        ctx.beginPath(); ctx.roundRect(gx - 10, gy - 20, gw + 20, gh + 40, 8); ctx.stroke();
+        ctx.fillStyle = 'rgba(9, 9, 11, 0.7)'; ctx.fill();
+
+        ctx.strokeStyle = '#3f3f46'; ctx.lineWidth = 1.2;
+        ctx.beginPath(); ctx.moveTo(gx, gy); ctx.lineTo(gx, gy + gh); ctx.lineTo(gx + gw, gy + gh); ctx.stroke();
+
+        ctx.fillStyle = '#a1a1aa'; ctx.font = '8px monospace';
+        ctx.fillText('Matter Density', gx - 5, gy - 8);
+        ctx.fillText('X Profile (Void->Filament)', gx + 15, gy + gh + 12);
+
+        ctx.strokeStyle = '#10b981'; ctx.lineWidth = 1.8;
+        ctx.beginPath();
+        for (let x = 0; x <= gw; x++) {
+          const normX = (x / gw) - 0.5;
+          let val = 0;
+          if (isVertConstructive) {
+            val = Math.exp(-normX * normX * 18.0) * (gh - 30);
+          } else {
+            val = (1.0 - Math.exp(-normX * normX * 8.0)) * (gh - 50) + 10;
+          }
+          ctx.lineTo(gx + x, gy + gh - val);
+        }
+        ctx.stroke();
+
+        ctx.font = 'bold 8.5px monospace';
+        ctx.fillStyle = isVertConstructive ? '#10b981' : '#a855f7';
+        ctx.fillText(isVertConstructive ? 'Constructive (Filament)' : 'Destructive (Void)', gx + 15, gy + 18);
+        ctx.fillStyle = '#71717a';
+        ctx.fillText(`Phase Discordance: Δθ=${phaseMismatch.toFixed(2)}`, gx + 15, gy + 32);
+        ctx.restore();
+
+        ctx.fillStyle = '#f4f4f5'; ctx.font = 'bold 11px monospace';
+        ctx.fillText('COSMIC WEB EMERGENCE (INTERFERENCE)', 20, 30);
+
+      } else if (simMode === 'quake') {
+        const centerX = width * 0.62;
+        const centerY = height / 2;
+        const scale = 50;
+
+        const project = (x, y, z) => {
+          const cosY = Math.cos(angleY), sinY = Math.sin(angleY);
+          const x1 = x * cosY - y * sinY;
+          const y1 = x * sinY + y * cosY;
+          const cosX = Math.cos(angleX), sinX = Math.sin(angleX);
+          const z2 = z * cosX - y1 * sinX;
+          const y2 = z * sinX + y1 * cosX;
+          const projX = (x1 * 8) / (y2 + 8) * scale + centerX;
+          const projY = centerY - (z2 * 8) / (z2 + 8) * scale;
+          return { px: projX, py: projY, depth: y2 };
+        };
+
+        stress += slipVelocity * 0.2;
+        stressHistory.push(stress);
+        if (stressHistory.length > 120) stressHistory.shift();
+
+        if (stress >= ruptureThreshold) {
+          stress = 0;
+          for (let i = 0; i < 4; i++) {
+            gwWaves.push({ r: 5, maxR: 200, speed: 4 + i * 0.6, alpha: 1.0, color: '#a855f7', isConvertible: true });
+          }
+        }
+
+        if (frameCount % 30 === 0 && stress > 15) {
+          gwWaves.push({ r: 5, maxR: 120, speed: 1.5, alpha: 0.4, color: '#3b82f6', isConvertible: false });
+        }
+
+        // Tectonic grid lines
+        ctx.strokeStyle = 'rgba(63, 63, 70, 0.3)'; ctx.lineWidth = 0.8;
+        const uSteps = 10, vSteps = 10;
+        const gridPoints = [];
+
+        for (let i = 0; i <= uSteps; i++) {
+          const u = (i / uSteps - 0.5) * 200;
+          gridPoints[i] = [];
+          for (let j = 0; j <= vSteps; j++) {
+            const v = (j / vSteps - 0.5) * 200;
+            let slipOffset = (u < 0) ? -stress * 0.15 : stress * 0.15;
+            const decay = Math.exp(-Math.abs(u) * 0.03);
+            slipOffset *= (1.0 - decay);
+            gridPoints[i].push(project(u, v, slipOffset));
+          }
+        }
+
+        for (let i = 0; i <= uSteps; i++) {
+          ctx.beginPath();
+          for (let j = 0; j <= vSteps; j++) {
+            j === 0 ? ctx.moveTo(gridPoints[i][j].px, gridPoints[i][j].py) : ctx.lineTo(gridPoints[i][j].px, gridPoints[i][j].py);
+          }
+          ctx.stroke();
+        }
+        for (let j = 0; j <= vSteps; j++) {
+          ctx.beginPath();
+          for (let i = 0; i <= uSteps; i++) {
+            i === 0 ? ctx.moveTo(gridPoints[i][j].px, gridPoints[i][j].py) : ctx.lineTo(gridPoints[i][j].px, gridPoints[i][j].py);
+          }
+          ctx.stroke();
+        }
+
+        // Fault line
+        ctx.save(); ctx.strokeStyle = 'rgba(168, 85, 247, 0.45)'; ctx.lineWidth = 2.0;
+        const topFaultProj = project(0, -100, 0); const bottomFaultProj = project(0, 100, 0);
+        ctx.beginPath(); ctx.moveTo(topFaultProj.px, topFaultProj.py); ctx.lineTo(bottomFaultProj.px, bottomFaultProj.py); ctx.stroke(); ctx.restore();
+
+        // Magnetic column
+        const magColZ = 55;
+        ctx.save(); ctx.strokeStyle = 'rgba(56, 189, 248, 0.15)'; ctx.lineWidth = 12;
+        const topMagProj = project(magColZ, -100, 0); const bottomMagProj = project(magColZ, 100, 0);
+        ctx.beginPath(); ctx.moveTo(topMagProj.px, topMagProj.py); ctx.lineTo(bottomMagProj.px, bottomMagProj.py); ctx.stroke(); ctx.restore();
+
+        const centerProj = project(0, 0, 0);
+
+        // GW Waves & Gertsenshtein Converter
+        gwWaves.forEach((w) => {
+          w.r += w.speed;
+          w.alpha -= 0.007;
+
+          ctx.save(); ctx.strokeStyle = w.color; ctx.globalAlpha = Math.max(0, w.alpha);
+          ctx.lineWidth = w.color === '#a855f7' ? 2.0 : 1.0;
+          ctx.beginPath(); ctx.arc(centerProj.px, centerProj.py, w.r, 0, 2 * Math.PI); ctx.stroke(); ctx.restore();
+
+          if (w.isConvertible && w.r > 38 && w.r < 46) {
+            w.isConvertible = false;
+            gertsenshteinFlash = 1.0;
+            for (let angle = 0; angle < 2 * Math.PI; angle += Math.PI / 4) {
+              photons.push({
+                x: centerProj.px + Math.cos(angle) * w.r,
+                y: centerProj.py + Math.sin(angle) * w.r,
+                vx: Math.cos(angle) * 7.5,
+                vy: Math.sin(angle) * 7.5,
+                color: '#fbbf24', alpha: 1.0
+              });
+            }
+          }
+        });
+        gwWaves = gwWaves.filter(w => w.alpha > 0);
+
+        photons.forEach((p) => {
+          p.x += p.vx; p.y += p.vy; p.alpha -= 0.015;
+          ctx.save(); ctx.fillStyle = p.color; ctx.globalAlpha = Math.max(0, p.alpha);
+          ctx.shadowBlur = 8; ctx.shadowColor = '#fbbf24';
+          ctx.beginPath(); ctx.arc(p.x, p.y, 2.5, 0, 2 * Math.PI); ctx.fill(); ctx.restore();
+        });
+        photons = photons.filter(p => p.alpha > 0);
+
+        if (gertsenshteinFlash > 0) {
+          ctx.save(); ctx.fillStyle = `rgba(251, 191, 36, ${gertsenshteinFlash * 0.12})`; ctx.fillRect(0, 0, width, height);
+          ctx.font = 'bold 8.5px monospace'; ctx.fillStyle = `rgba(251, 191, 36, ${gertsenshteinFlash})`;
+          ctx.fillText('⚡ GERTSENSHTEIN CONVERSION (GW ➝ EM FRB)', centerProj.px - 100, centerProj.py - 120); ctx.restore();
+          gertsenshteinFlash -= 0.035;
+        }
+
+        // Reset blend for UI drawing
+        ctx.globalCompositeOperation = 'source-over';
+
+        // Seismograph Graph
+        const gx = 45; const gy = 80; const gw = 170; const gh = 100;
+        ctx.save(); ctx.strokeStyle = '#27272a'; ctx.lineWidth = 1;
+        ctx.beginPath(); ctx.roundRect(gx - 10, gy - 20, gw + 20, gh + 40, 8); ctx.stroke();
+        ctx.fillStyle = 'rgba(9, 9, 11, 0.7)'; ctx.fill();
+
+        ctx.strokeStyle = '#3f3f46'; ctx.lineWidth = 1.2;
+        ctx.beginPath(); ctx.moveTo(gx, gy); ctx.lineTo(gx, gy + gh); ctx.lineTo(gx + gw, gy + gh); ctx.stroke();
+
+        ctx.fillStyle = '#a1a1aa'; ctx.font = '8px monospace';
+        ctx.fillText('Stress S_μν', gx - 5, gy - 8); ctx.fillText('t (Time)', gx + gw - 35, gy + gh + 12);
+
+        ctx.strokeStyle = '#ef4444'; ctx.lineWidth = 1.5; ctx.beginPath();
+        stressHistory.forEach((val, idx) => {
+          const px = gx + (idx / 120) * gw;
+          const py = gy + gh - (val / ruptureThreshold) * (gh - 15);
+          idx === 0 ? ctx.moveTo(px, py) : ctx.lineTo(px, py);
+        });
+        ctx.stroke(); ctx.restore();
+
+        // Frequency Spectrum Graph
+        const gx2 = 45; const gy2 = 230; const gw2 = 170; const gh2 = 100;
+        ctx.save(); ctx.strokeStyle = '#27272a'; ctx.lineWidth = 1;
+        ctx.beginPath(); ctx.roundRect(gx2 - 10, gy2 - 20, gw2 + 20, gh2 + 40, 8); ctx.stroke();
+        ctx.fillStyle = 'rgba(9, 9, 11, 0.7)'; ctx.fill();
+
+        ctx.strokeStyle = '#3f3f46'; ctx.lineWidth = 1.2;
+        ctx.beginPath(); ctx.moveTo(gx2, gy2); ctx.lineTo(gx2, gy2 + gh2); ctx.lineTo(gx2 + gw2, gy2 + gh2); ctx.stroke();
+
+        ctx.fillStyle = '#a1a1aa'; ctx.font = '8px monospace';
+        ctx.fillText('Power P(f)', gx2 - 5, gy2 - 8); ctx.fillText('f (nHz ➝ GHz)', gx2 + gw2 - 65, gy2 + gh2 + 12);
+
+        ctx.strokeStyle = '#fbbf24'; ctx.lineWidth = 1.5; ctx.beginPath();
+        for (let f = 0; f <= gw2; f++) {
+          const normF = f / gw2;
+          const nHzSpike = Math.exp(-normF * normF * 120) * (stress * 0.35);
+          const isQuaking = (stress < 5 && stressHistory[stressHistory.length - 2] > ruptureThreshold - 5);
+          const ghzSpike = isQuaking ? Math.exp(-(normF - 0.85) * (normF - 0.85) * 80) * (gh2 - 20) : 0;
+          const val = nHzSpike + ghzSpike + Math.random() * 2;
+          ctx.lineTo(gx2 + f, gy2 + gh2 - val);
+        }
+        ctx.stroke(); ctx.restore();
+
+        ctx.fillStyle = '#9ca3af'; ctx.font = '9px monospace';
+        ctx.fillText('🔄 Click & Drag canvas to rotate fault plane geometry', 20, height - 20);
+        ctx.fillStyle = '#f4f4f5'; ctx.font = 'bold 11px monospace';
+        ctx.fillText('COSMIC QUAKE & GERTSENSHTEIN EFFECT', 20, 30);
+
+      } else if (simMode === 'pointing') {
+        const centerX = width * 0.65;
+        const centerY = height / 2;
+        const scale = 50;
+
+        const project = (x, y, z) => {
+          const cosY = Math.cos(angleY), sinY = Math.sin(angleY);
+          const x1 = x * cosY - y * sinY;
+          const y1 = x * sinY + y * cosY;
+          const cosX = Math.cos(angleX), sinX = Math.sin(angleX);
+          const z2 = z * cosX - y1 * sinX;
+          const y2 = z * sinX + y1 * cosX;
+          const projX = (x1 * 8) / (y2 + 8) * scale + centerX;
+          const projY = centerY - (z2 * 8) / (z2 + 8) * scale;
+          return { px: projX, py: projY, depth: y2 };
+        };
+
+        pointingProgress += 0.5;
+        if (pointingProgress > 100) {
+          pointingProgress = 0;
+          pointingStatus = 'scanning';
+        }
+
+        const progress = pointingProgress;
+        if (progress > 85) pointingStatus = 'burst';
+        else if (progress > 60) pointingStatus = 'locked';
+        else if (progress > 38) pointingStatus = 'warning';
+        else pointingStatus = 'scanning';
+
+        if (progress > 38 && progress < 39) {
+          targetIndex = Math.floor(Math.random() * pulsars.length);
+        }
+
+        // Draw connections
+        ctx.strokeStyle = 'rgba(63, 63, 70, 0.15)'; ctx.lineWidth = 0.8;
+        const pulsarPoints = pulsars.map((p) => {
+          const jitterVal = pointingStatus !== 'scanning' ? (Math.random() - 0.5) * (progress * 0.12) : 0;
+          return project(p.x + jitterVal, p.y + jitterVal, p.z);
+        });
+
+        for (let i = 0; i < pulsarPoints.length; i++) {
+          ctx.beginPath(); ctx.moveTo(pulsarPoints[i].px, pulsarPoints[i].py);
+          const nextIndex = (i + 1) % pulsarPoints.length;
+          ctx.lineTo(pulsarPoints[nextIndex].px, pulsarPoints[nextIndex].py);
+          ctx.stroke();
+        }
+
+        // Draw Pulsars
+        pulsars.forEach((p, idx) => {
+          const pt = pulsarPoints[idx];
+          const pulseVal = Math.sin(frameCount * (2 * Math.PI / p.pulsePeriod) + p.pulsePhase);
+          const isTarget = (idx === targetIndex && pointingStatus !== 'scanning');
+
+          ctx.save(); ctx.shadowBlur = isTarget ? 15 : 6; ctx.shadowColor = p.color;
+          ctx.fillStyle = p.color;
+          ctx.beginPath(); ctx.arc(pt.px, pt.py, 4 + pulseVal * 2, 0, 2 * Math.PI); ctx.fill();
+          ctx.restore();
+
+          if (frameCount % 12 === 0) {
+            ctx.save(); ctx.strokeStyle = p.color + '33'; ctx.lineWidth = 1;
+            ctx.beginPath(); ctx.arc(pt.px, pt.py, 15 + pulseVal * 8, 0, 2 * Math.PI); ctx.stroke(); ctx.restore();
+          }
+
+          ctx.fillStyle = '#71717a'; ctx.font = '8px monospace';
+          ctx.fillText(p.name, pt.px - 15, pt.py - 10);
+        });
+
+        // Reticle target lock
+        const targetPt = pulsarPoints[targetIndex];
+        if (pointingStatus === 'warning') {
+          reticlePos.x += (targetPt.px - reticlePos.x) * 0.1;
+          reticlePos.y += (targetPt.py - reticlePos.y) * 0.1;
+
+          ctx.save(); ctx.strokeStyle = '#fbbf24'; ctx.lineWidth = 1.2;
+          ctx.beginPath(); ctx.arc(reticlePos.x, reticlePos.y, 22, 0, 2 * Math.PI); ctx.stroke();
+          ctx.beginPath();
+          ctx.moveTo(reticlePos.x - 30, reticlePos.y); ctx.lineTo(reticlePos.x + 30, reticlePos.y);
+          ctx.moveTo(reticlePos.x, reticlePos.y - 30); ctx.lineTo(reticlePos.x, reticlePos.y + 30);
+          ctx.stroke(); ctx.restore();
+
+        } else if (pointingStatus === 'locked' || pointingStatus === 'burst') {
+          reticlePos = { x: targetPt.px, y: targetPt.py };
+
+          ctx.save(); ctx.strokeStyle = pointingStatus === 'burst' ? '#ef4444' : '#10b981'; ctx.lineWidth = 1.8;
+          ctx.strokeRect(reticlePos.x - 18, reticlePos.y - 18, 36, 36);
+
+          ctx.font = 'bold 8px monospace'; ctx.fillStyle = pointingStatus === 'burst' ? '#ef4444' : '#10b981';
+          ctx.fillText(pointingStatus === 'burst' ? 'BURST DETECTED!' : 'POINTING LOCKED', reticlePos.x - 40, reticlePos.y - 24);
+          ctx.restore();
+
+          if (pointingStatus === 'burst' && progress > 86 && progress < 88) {
+            gwWaves.push({ r: 2, maxR: 90, speed: 4.5, alpha: 1.0, color: '#fbbf24', isConvertible: false });
+          }
+        }
+
+        gwWaves.forEach((w) => {
+          w.r += w.speed; w.alpha -= 0.02;
+          ctx.save(); ctx.strokeStyle = w.color; ctx.globalAlpha = Math.max(0, w.alpha);
+          ctx.lineWidth = 2.0; ctx.beginPath(); ctx.arc(reticlePos.x, reticlePos.y, w.r, 0, 2 * Math.PI); ctx.stroke(); ctx.restore();
+        });
+        gwWaves = gwWaves.filter(w => w.alpha > 0);
+
+        // Reset blend for UI drawing
+        ctx.globalCompositeOperation = 'source-over';
+
+        // Neural Net Dashboard
+        const gx = 45; const gy = 80; const gw = 170; const gh = 100;
+        ctx.save(); ctx.strokeStyle = '#27272a'; ctx.lineWidth = 1;
+        ctx.beginPath(); ctx.roundRect(gx - 10, gy - 20, gw + 20, gh + 40, 8); ctx.stroke();
+        ctx.fillStyle = 'rgba(9, 9, 11, 0.7)'; ctx.fill();
+
+        ctx.fillStyle = '#a1a1aa'; ctx.font = '8px monospace';
+        ctx.fillText('Neural Net Signal Decoder', gx - 5, gy - 8);
+
+        const inputs = [25, 50, 75]; const hiddens = [15, 38, 62, 85]; const outputs = [35, 65];
+
+        ctx.strokeStyle = 'rgba(113, 113, 122, 0.15)'; ctx.lineWidth = 0.8;
+        inputs.forEach(iy => {
+          hiddens.forEach(hy => {
+            ctx.beginPath(); ctx.moveTo(gx + 25, gy + iy); ctx.lineTo(gx + 85, gy + hy); ctx.stroke();
+          });
+        });
+        hiddens.forEach(hy => {
+          outputs.forEach(oy => {
+            ctx.beginPath(); ctx.moveTo(gx + 85, gy + hy); ctx.lineTo(gx + 145, gy + oy); ctx.stroke();
+          });
+        });
+
+        const drawNode = (nx, ny, color, active) => {
+          ctx.fillStyle = active ? color : '#27272a';
+          ctx.beginPath(); ctx.arc(nx, ny, 4, 0, 2 * Math.PI); ctx.fill();
+        };
+
+        const activityColor = pointingStatus === 'scanning' ? '#3b82f6' : pointingStatus === 'warning' ? '#fbbf24' : '#ef4444';
+        const isPulseActive = (frameCount % 10 < 5);
+
+        inputs.forEach(iy => drawNode(gx + 25, gy + iy, '#3b82f6', isPulseActive));
+        hiddens.forEach(hy => drawNode(gx + 85, gy + hy, activityColor, pointingStatus !== 'scanning' && isPulseActive));
+        outputs.forEach(oy => drawNode(gx + 145, gy + oy, '#10b981', pointingStatus === 'locked' || pointingStatus === 'burst'));
+        ctx.restore();
+
+        // Rupture Probability Circular Gauge
+        const gx2 = 45; const gy2 = 230; const gw2 = 170; const gh2 = 100;
+        ctx.save(); ctx.strokeStyle = '#27272a'; ctx.lineWidth = 1;
+        ctx.beginPath(); ctx.roundRect(gx2 - 10, gy2 - 20, gw2 + 20, gh2 + 40, 8); ctx.stroke();
+        ctx.fillStyle = 'rgba(9, 9, 11, 0.7)'; ctx.fill();
+
+        ctx.fillStyle = '#a1a1aa'; ctx.font = '8px monospace';
+        ctx.fillText('Rupture Probability P_quake', gx2 - 5, gy2 - 8);
+
+        const rx = gx2 + gw2 / 2; const ry = gy2 + gh2 / 2 + 5; const rad = 32;
+
+        ctx.strokeStyle = '#27272a'; ctx.lineWidth = 6;
+        ctx.beginPath(); ctx.arc(rx, ry, rad, 0, 2 * Math.PI); ctx.stroke();
+
+        const progressRad = (progress / 100) * 2 * Math.PI;
+        ctx.strokeStyle = pointingStatus === 'scanning' ? '#3b82f6' : pointingStatus === 'warning' ? '#fbbf24' : pointingStatus === 'locked' ? '#10b981' : '#ef4444';
+        ctx.lineWidth = 6;
+        ctx.beginPath(); ctx.arc(rx, ry, rad, -Math.PI / 2, -Math.PI / 2 + progressRad); ctx.stroke();
+
+        ctx.fillStyle = '#f4f4f5'; ctx.font = 'bold 9px monospace'; ctx.textAlign = 'center';
+        ctx.fillText(`${Math.round(progress)}%`, rx, ry + 3);
+        ctx.restore();
+
+        // Banners
+        if (pointingStatus === 'warning') {
+          ctx.save(); ctx.fillStyle = 'rgba(251, 191, 36, 0.1)'; ctx.fillRect(230, 45, width - 240, 30);
+          ctx.strokeStyle = '#fbbf24'; ctx.lineWidth = 1; ctx.strokeRect(230, 45, width - 240, 30);
+          ctx.fillStyle = '#fbbf24'; ctx.font = 'bold 9px monospace'; ctx.textAlign = 'center';
+          ctx.fillText('⚠️ POINTING PROTOCOL: SGWB PRECURSOR TIMING JITTER DETECTED', width * 0.62, 63); ctx.restore();
+        } else if (pointingStatus === 'locked') {
+          ctx.save(); ctx.fillStyle = 'rgba(16, 185, 129, 0.15)'; ctx.fillRect(230, 45, width - 240, 30);
+          ctx.strokeStyle = '#10b981'; ctx.lineWidth = 1; ctx.strokeRect(230, 45, width - 240, 30);
+          ctx.fillStyle = '#10b981'; ctx.font = 'bold 9px monospace'; ctx.textAlign = 'center';
+          ctx.fillText('📡 TARGET LOCKED: POINTING AUTO-SCAN COORDINATES MATCHED', width * 0.62, 63); ctx.restore();
+        } else if (pointingStatus === 'burst') {
+          ctx.save(); ctx.fillStyle = 'rgba(239, 68, 68, 0.2)'; ctx.fillRect(230, 45, width - 240, 30);
+          ctx.strokeStyle = '#ef4444'; ctx.lineWidth = 1; ctx.strokeRect(230, 45, width - 240, 30);
+          ctx.fillStyle = '#ef4444'; ctx.font = 'bold 10px monospace'; ctx.textAlign = 'center';
+          ctx.fillText('⚡ ALERT: GHz FRB SHOCKWAVE DETECTED IN FLUX CONVERTER!', width * 0.62, 63); ctx.restore();
+        }
+
+        ctx.fillStyle = '#9ca3af'; ctx.font = '9px monospace';
+        ctx.fillText('🔄 Click & Drag canvas to rotate pulsar network view', 20, height - 20);
+        ctx.fillStyle = '#f4f4f5'; ctx.font = 'bold 11px monospace';
+        ctx.fillText('POINTING EARLY WARNING PROTOCOL (DECISION)', 20, 30);
+      }
+
+      requestAnimationFrame(render);
+    }
+
+    // Initialize Simulation
+    resetSimulation();
+    requestAnimationFrame(render);
+
+  </script>
+</body>
+</html>
